@@ -6,9 +6,7 @@ import com.driver.model.Hotel;
 import com.driver.model.User;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class HotelManagementRepository {
@@ -16,6 +14,7 @@ public class HotelManagementRepository {
     HashMap<String, Hotel> hotels = new HashMap<>();
     HashMap<Integer, User> users = new HashMap<>();
     HashMap<String, Booking> bookings = new HashMap<>();
+    HashMap<Integer, List<Booking>> personBookingsList = new HashMap<>();
     public String addHotel(Hotel hotel) {
         if(hotels.containsKey(hotel.getHotelName())){
             return "FAILURE";
@@ -31,7 +30,7 @@ public class HotelManagementRepository {
 
     public String getHotelWithMostFacilities() {
         String maxfacility = "";
-        int max = 0;
+        int max = -1;
         for(String hotelName : hotels.keySet()){
             Hotel hotel = hotels.get(hotelName);
             if(hotel.getFacilities().size() > max){
@@ -39,17 +38,16 @@ public class HotelManagementRepository {
                 max = hotel.getFacilities().size();
             }
             else if(hotel.getFacilities().size() == max){
-                if(hotelName.compareTo(maxfacility) < 0){
-                    maxfacility = hotelName;
-                }
+                String[] arr = new String[] {hotelName, maxfacility};
+                Arrays.sort(arr);
+                maxfacility = arr[0];
             }
         }
-        return maxfacility;
+        return max <= 0 ? "" : maxfacility;
     }
 
     public int bookARoom(Booking booking) {
-        UUID uuid = UUID.randomUUID();
-        String id = uuid.toString();
+        String id = String.valueOf(UUID.randomUUID());
         booking.setBookingId(id);
 
         String hotelName = booking.getHotelName();
@@ -66,19 +64,19 @@ public class HotelManagementRepository {
 
         hotel.setAvailableRooms(availableRooms - noOfRooms);
         bookings.put(id, booking);
-        hotels.put(hotelName, hotel);
+        int aadharNumber = booking.getBookingAadharCard();
+        if(!personBookingsList.containsKey(aadharNumber)) {
+            personBookingsList.put(aadharNumber, new ArrayList<>());
+        }
+
+        personBookingsList.get(aadharNumber).add(booking);
+
         return amountPaid;
     }
 
     public int getBooking(Integer aadharCard) {
-        int count = 0;
-
-        for(String id : bookings.keySet()){
-            int personFromDB = bookings.get(id).getBookingAadharCard();
-            if(personFromDB == aadharCard)
-                count++;
-        }
-        return count;
+        if(!personBookingsList.containsKey(aadharCard)) return 0;
+        return personBookingsList.get(aadharCard).size();
     }
 
     public Hotel updateFacilities(List<Facility> newFacilities, String hotelName) {
@@ -86,15 +84,11 @@ public class HotelManagementRepository {
         List<Facility> oldfacilities = hotel.getFacilities();
 
         for(Facility facility : newFacilities ){
-            if(oldfacilities.contains(facility)){
-                continue;
-            }
-            else{
+            if(!oldfacilities.contains(facility)){
                 oldfacilities.add(facility);
             }
         }
         hotel.setFacilities(oldfacilities);
-        hotels.put(hotelName,hotel);
 
         return hotel;
 
