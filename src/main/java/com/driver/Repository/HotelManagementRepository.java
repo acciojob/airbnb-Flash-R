@@ -16,8 +16,9 @@ public class HotelManagementRepository {
     HashMap<Integer, User> users = new HashMap<>();
     HashMap<String, Booking> bookings = new HashMap<>();
     public String addHotel(Hotel hotel) {
-        if(hotels.containsKey(hotel.getHotelName()))
+        if(hotels.containsKey(hotel.getHotelName())){
             return "FAILURE";
+        }
         hotels.put(hotel.getHotelName(), hotel);
         return "SUCCESS";
     }
@@ -30,33 +31,41 @@ public class HotelManagementRepository {
     public String getHotelWithMostFacilities() {
         String maxfacility = "";
         int max = 0;
-        for(String h : hotels.keySet()){
-            int facility = hotels.get(h).getFacilities().size();
-            if(facility > max){
-                maxfacility = h;
-                max = facility;
+        for(String hotelName : hotels.keySet()){
+            Hotel hotel = hotels.get(hotelName);
+            if(hotel.getFacilities().size() > max){
+                maxfacility = hotelName;
+                max = hotel.getFacilities().size();
             }
-
+            else if(hotel.getFacilities().size() == max){
+                if(hotelName.compareTo(maxfacility) < 0){
+                    maxfacility = hotelName;
+                }
+            }
         }
-        if(max == 0)
-            return "";
         return maxfacility;
     }
 
-    public int bookARoom(String id, Booking booking) {
+    public int bookARoom(String bookingId, Booking booking) {
+        booking.setBookingId(bookingId);
 
-        if(hotels.get(booking.getHotelName()).getAvailableRooms() < booking.getNoOfRooms()){
+        String hotelName = booking.getHotelName();
+        Hotel hotel = hotels.get(hotelName);
+        int pricePerNight = hotel.getPricePerNight();
+        int noOfRooms = booking.getNoOfRooms();
+        int availableRooms = hotel.getAvailableRooms();
+
+        if(noOfRooms > availableRooms){
             return -1;
         }
-        int pricePerNight = hotels.get(booking.getHotelName()).getPricePerNight();
-        int numberOfRooms = booking.getNoOfRooms();
+        int amountPaid = noOfRooms * pricePerNight;
+        booking.setAmountToBePaid(amountPaid);
 
-        int price = pricePerNight * numberOfRooms;
-        booking.setAmountToBePaid(price);
+        hotel.setAvailableRooms(availableRooms - noOfRooms);
+        bookings.put(bookingId, booking);
+        hotels.put(hotelName, hotel);
 
-        bookings.put(id,booking);
-        hotels.put(hotels.get(booking.getHotelName()).getHotelName(),hotels.get(booking.getHotelName()));
-        return price;
+        return amountPaid;
     }
 
     public int getBooking(Integer aadharCard) {
