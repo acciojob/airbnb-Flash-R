@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class HotelManagementRepository {
@@ -18,8 +19,8 @@ public class HotelManagementRepository {
     public String addHotel(Hotel hotel) {
         if(hotels.containsKey(hotel.getHotelName())){
             return "FAILURE";
-        }
-        hotels.put(hotel.getHotelName(), hotel);
+        }else
+            hotels.put(hotel.getHotelName(), hotel);
         return "SUCCESS";
     }
 
@@ -46,8 +47,10 @@ public class HotelManagementRepository {
         return maxfacility;
     }
 
-    public int bookARoom(String bookingId, Booking booking) {
-        booking.setBookingId(bookingId);
+    public int bookARoom(Booking booking) {
+        UUID uuid = UUID.randomUUID();
+        String id = uuid.toString();
+        booking.setBookingId(id);
 
         String hotelName = booking.getHotelName();
         Hotel hotel = hotels.get(hotelName);
@@ -62,9 +65,8 @@ public class HotelManagementRepository {
         booking.setAmountToBePaid(amountPaid);
 
         hotel.setAvailableRooms(availableRooms - noOfRooms);
-        bookings.put(bookingId, booking);
+        bookings.put(id, booking);
         hotels.put(hotelName, hotel);
-
         return amountPaid;
     }
 
