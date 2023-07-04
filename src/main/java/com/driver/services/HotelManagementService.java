@@ -16,11 +16,6 @@ public class HotelManagementService {
     @Autowired
     HotelManagementRepository hotelManagementRepository;
     public String addHotel(Hotel hotel) {
-        if(hotel == null)
-            return "FAILURE";
-        if(hotel.getHotelName() == null)
-            return "FAILURE";
-
         return hotelManagementRepository.addHotel(hotel);
     }
 

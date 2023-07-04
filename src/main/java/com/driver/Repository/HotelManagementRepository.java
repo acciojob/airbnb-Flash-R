@@ -16,7 +16,7 @@ public class HotelManagementRepository {
     HashMap<String, Booking> bookings = new HashMap<>();
     HashMap<Integer, List<Booking>> personBookingsList = new HashMap<>();
     public String addHotel(Hotel hotel) {
-        if(hotels.containsKey(hotel.getHotelName())){
+        if(hotels.containsKey(hotel.getHotelName()) || hotel == null || hotel.getHotelName() == null){
             return "FAILURE";
         }else
             hotels.put(hotel.getHotelName(), hotel);
@@ -24,6 +24,7 @@ public class HotelManagementRepository {
     }
 
     public Integer addUser(User user) {
+        if(user == null) return -1;
         users.put(user.getaadharCardNo(),user);
         return user.getaadharCardNo();
     }
@@ -47,6 +48,7 @@ public class HotelManagementRepository {
     }
 
     public int bookARoom(Booking booking) {
+        if(booking == null) return -1;
         String id = String.valueOf(UUID.randomUUID());
         booking.setBookingId(id);
 
